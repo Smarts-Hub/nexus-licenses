@@ -40,6 +40,7 @@ const config = {
     login: "🔓",
     ip: "🌍",
   },
+  interactionApiKey: "87b721b19262a6a7c1e90182b283f018:bd8182bb6855c844321b4fe89afb34bfa003c872b3e63d1a915583cad648eeb365033eb14677ebfae76499c7698bc905f25201b965bdda327fb100837661ac82174e72eadef1e85a131d069cdb67cdf09195505d3b0ef60c7cbaaa8f681ad562",
 };
 
 export default config;
