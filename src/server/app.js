@@ -11,6 +11,7 @@ import crypto from 'crypto';
 import config from "../config.js";
 
 import licensesRouter from './routes/licenses.routes.js';
+import apiRouter from './routes/api.routes.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,11 +38,13 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use('/licenses', licensesRouter);
+app.use('/apiv1', apiRouter);
 
 const launchWebServer = async () => {
     console.log((`Launching web server on port ${config.webServerConfig.port}`));
     await app.listen(config.webServerConfig.port);
-    console.log(chalk.green(`Successfully launched web server on port ${config.webServerConfig.port}`));
+    console.log(chalk.green(`Successfully launched api server on port ${config.webServerConfig.port}`));
+    console.log(chalk.white(`Visit it at http://localhost:${config.webServerConfig.port}/`));
 }
 
 export default launchWebServer;
