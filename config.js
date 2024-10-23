@@ -40,6 +40,8 @@ const config = {
     login: "🔓",
     ip: "🌍",
   },
+  interactionApiKey: "",
+
 };
 
 export default config;

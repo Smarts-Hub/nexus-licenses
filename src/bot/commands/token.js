@@ -16,12 +16,7 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('create')
-                .setDescription('Creates a new interaction api token'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('delete')
-                .setDescription('Deletes a interaction api token')
-                .addStringOption(option => option.setName('token').setDescription('The name of the token you want to delete').setRequired(true))),
+                .setDescription('Creates a new interaction api token')),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.has(config.adminRoleId)) {
@@ -42,7 +37,7 @@ export default {
                 const existingTokenEmbed = new EmbedBuilder()
                     .setTitle('Existing Interaction API Key')
                     .setColor('D83F31')
-                    .setDescription(`Ya existe una clave de interactionApiKey: \`${await decrypt(config.interactionApiKey)}\``);
+                    .setDescription(`There is an existing token: \`${await decrypt(config.interactionApiKey)}\``);
                 
                 return interaction.editReply({ embeds: [existingTokenEmbed], ephemeral: true });
             }
@@ -68,7 +63,7 @@ export default {
             const successEmbed = new EmbedBuilder()
                 .setTitle('Token Created')
                 .setColor('32D83F')
-                .setDescription('Se ha generado y guardado un nuevo interactionApiKey.\n`'+ newToken + '`');
+                .setDescription('The new token has been created and saved in config.js.\n`'+ newToken + '`');
 
             return interaction.editReply({ embeds: [successEmbed], ephemeral: true });
         }

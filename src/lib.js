@@ -1,5 +1,5 @@
 const lib = {
-  version: "1.2.1-fix2",
+  version: "1.3.0",
 };
 
 export default lib;
