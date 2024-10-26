@@ -185,6 +185,5 @@ router.delete('/licenses/delete/', async function(req, res) {
   return res.json({ status: "success", message: "License deleted", data: { license: licenseKey, timestamp: Date.now() } });
 })
 
-router.post')
 
 export default router;
