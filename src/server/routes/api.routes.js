@@ -164,4 +164,27 @@ router.get('/licenses/decrypt', async (req, res) => {
   return res.json({ status: "success", message: "Decrypted license key", data: { key: decrypted, timestamp: Date.now() } });
 })
 
+router.delete('/licenses/delete/', async function(req, res) {
+  const token = req.headers.authorization;
+  
+  if (!token) {
+    return res.json({ status: "error", message: "Invalid token", data: { error: 'Undefined token'} });
+  }
+
+  if (token !== await decrypt(config.interactionApiKey)) {
+    return res.json({ status: "error", message: "Invalid token", data: { error: 'Invalid token'} });
+  }
+
+  const licenseId = req.query.licenseid;
+  const licenseKey = Licenses.findByIdAndDelete(licenseId);
+
+  if (!licenseKey) {
+    return res.json({ status: "error", message: "License not found", data: { error: 'License not found', timestamp: Date.now() } });
+  }
+
+  return res.json({ status: "success", message: "License deleted", data: { license: licenseKey, timestamp: Date.now() } });
+})
+
+router.post')
+
 export default router;
