@@ -13,7 +13,7 @@ console.log(
   chalk.greenBright("Nexus Licenses by Jayox. Version " + constants.version)
 );
 
-if(await verifyLicense(config.licenseKey) === false) {
+if(!(await verifyLicense(config.licenseKey))) {
   console.log(chalk.red("Shutting down Nexus Licenses..."));
   process.exit(1);
 }
