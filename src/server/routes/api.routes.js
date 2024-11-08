@@ -185,5 +185,19 @@ router.delete('/licenses/delete/', async function(req, res) {
   return res.json({ status: "success", message: "License deleted", data: { license: licenseKey, timestamp: Date.now() } });
 })
 
+import LicenseManager from "./licensemanager.js";
+
+const licenseManager = new LicenseManager();
+router.post('/licenses/create', async (req, res) => {
+  const { productName, maxLogins, maxIps, expires, ownerName } = req.body;
+
+  try {
+    const newLicense = await licenseManager.createLicense({ productName, maxLogins, maxIps, expires, ownerName });
+    res.json({ status: "success", message: "License created", data: newLicense });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 
 export default router;

@@ -52,6 +52,25 @@ def replace_config_js():
     shutil.copy(config_src, config_dst)
     print(f"{config_src} copiado a {config_dst}.")
 
+# Función para copiar el código fuente sin ofuscar a la carpeta source-dist
+def copy_to_source_dist():
+    source_dist_path = './source-dist'
+    
+    # Eliminar la carpeta source-dist si ya existe
+    if os.path.exists(source_dist_path):
+        shutil.rmtree(source_dist_path)
+        print(f"{source_dist_path} eliminado.")
+    
+    # Copiar ./src a ./source-dist
+    shutil.copytree('./src', source_dist_path)
+    print(f"Carpeta ./src copiada a {source_dist_path}.")
+    
+    # Copiar config.js a ./source-dist
+    config_src = './config.js'
+    config_dst = os.path.join(source_dist_path, 'config.js')
+    shutil.copy(config_src, config_dst)
+    print(f"{config_src} copiado a {config_dst}.")
+
 def main():
     # Solicitar la versión
     version = input("Introduce la nueva versión: ")
@@ -65,6 +84,9 @@ def main():
 
     # Reemplazar config.js
     replace_config_js()
+
+    # Crear carpeta source-dist con el código sin ofuscar
+    copy_to_source_dist()
 
 if __name__ == "__main__":
     main()

@@ -109,7 +109,7 @@ export const checkLicense = async (req, res) => {
       });
     }
 
-    if (Licenses.ips.includes(req.ip)) {
+    if (KeyData.ips.includes(req.ip)) {
       await Licenses.updateOne(
         { key },
         {

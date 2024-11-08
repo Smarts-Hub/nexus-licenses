@@ -8,11 +8,11 @@ const licensesSchema = new mongoose.Schema({
     },
     ownerId: {
         type: String,
-        required: true
+        required: false
     },
     ownerName: {
         type: String,
-        required: true
+        required: false
     },
     productId: {
         type: String,
