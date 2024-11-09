@@ -23,7 +23,7 @@ class LicenseManager {
     }
 
     // Crear el nuevo ID de licencia y encriptarlo
-    const licenseKey = `LICENSE-${Math.random().toString(36).substring(2, 15)}`;
+    const licenseKey = `LICENSE-${Math.random().toString(36).substring(config.keys.sections, config.keys.sectionsLength)}`;
     const encryptedKey = await encrypt(licenseKey);
 
     // Guardar la licencia en la base de datos
