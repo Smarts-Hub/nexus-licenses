@@ -3,7 +3,7 @@ import Licenses from "../../schemas/Licenses.js";
 import Products from "../../schemas/Products.js";
 import config from "../../config.js";
 import { encrypt } from "../../utils.js";
-
+import { generateLicense } from "../../config.js"
 class LicenseManager {
   constructor() {
     this.webhookClient = new WebhookClient({ url: config.webhookUrl });
@@ -23,7 +23,7 @@ class LicenseManager {
     }
 
     // Crear el nuevo ID de licencia y encriptarlo
-    const licenseKey = `LICENSE-${Math.random().toString(36).substring(config.keys.sections, config.keys.sectionsLength)}`;
+    const licenseKey = generateLicenseKey();
     const encryptedKey = await encrypt(licenseKey);
 
     // Guardar la licencia en la base de datos
