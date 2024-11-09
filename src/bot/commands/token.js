@@ -43,7 +43,7 @@ export default {
             }
 
             // Generar un nuevo token
-            const newToken = crypto.randomBytes(59).toString('base64');
+            const newToken = crypto.randomBytes(32).toString('hex');
             const encryptedToken = encrypt(newToken);
 
             // Actualizar solo el campo interactionApiKey
