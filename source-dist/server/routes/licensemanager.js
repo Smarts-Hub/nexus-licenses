@@ -3,7 +3,7 @@ import Licenses from "../../schemas/Licenses.js";
 import Products from "../../schemas/Products.js";
 import config from "../../config.js";
 import { encrypt } from "../../utils.js";
-
+import { generateLicense } from "../../config.js"
 class LicenseManager {
   constructor() {
     this.webhookClient = new WebhookClient({ url: config.webhookUrl });
@@ -23,7 +23,7 @@ class LicenseManager {
     }
 
     // Crear el nuevo ID de licencia y encriptarlo
-    const licenseKey = `LICENSE-${Math.random().toString(36).substring(2, 15)}`;
+    const licenseKey = generateLicense();
     const encryptedKey = await encrypt(licenseKey);
 
     // Guardar la licencia en la base de datos
@@ -42,18 +42,31 @@ class LicenseManager {
     await newLicense.save();
 
     // Enviar notificación de creación
-    await this.sendLicenseCreatedNotification(newLicense, productName);
+    await this.sendLicenseCreatedNotification(newLicense, productName, licenseKey);
 
-    return newLicense;
+    return {
+      key: licenseKey,
+      productName: productName,
+      expires: newLicense.expires,
+      ownerName: newLicense.ownerName,
+      createdBy: newLicense.createdBy,
+      blacklisted: newLicense.blacklisted,
+      maxLogins: newLicense.maxLogins,
+      maxIPs: newLicense.maxIPs,
+      currentLogins: newLicense.currentLogins,
+      ips: newLicense.ips,
+      ownerName: newLicense.ownerName,
+      createdBy: newLicense.createdBy,
+    };
   }
 
   // Notificación de creación de licencia
-  async sendLicenseCreatedNotification(license, productName) {
+  async sendLicenseCreatedNotification(license, productName, key) {
     const embed = new EmbedBuilder()
       .setTitle(`\`🟢\` New License Created`)
       .setColor("00FF00")
       .addFields(
-        { name: "License Key", value: license.key, inline: true },
+        { name: "License Key", value: key, inline: true },
         { name: "Product", value: productName, inline: true },
         { name: "Expires", value: license.expires ? license.expires.toISOString() : "No expiration", inline: true },
       )

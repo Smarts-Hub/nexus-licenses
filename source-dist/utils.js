@@ -29,8 +29,8 @@ export async function initializeEncryptionData() {
       console.log('Encryption data loaded:', data);
     } else {
       const encryptionData = {
-        IV: generateRandomBytes(16),
-        ENCRYPT_KEY: generateRandomBytes(32),
+        IV: generateRandomBytes(64),
+        ENCRYPT_KEY: generateRandomBytes(512),
       };
       fs.writeFileSync(encryptionFilePath, JSON.stringify(encryptionData, null, 2), 'utf8');
       iv = Buffer.from(encryptionData.IV, 'hex');
