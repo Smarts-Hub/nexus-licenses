@@ -65,6 +65,26 @@ export default {
             .setDescription("The reason for deleting the license")
             .setRequired(false)
         )
+    )
+    .addSubcommand((subcommand) => 
+      subcommand.setName("blacklist")
+      .setDescription("Blacklists a license")
+    .addStringOption((option) => 
+    option.setName("license")
+      .setDescription("The license to blacklist")
+      .setRequired(true))
+    .addStringOption((option) => option
+      .setName("reason")
+      .setDescription("The reason for blacklisting the license")
+      .setRequired(false))  
+    )
+    .addSubcommand((subcommand) => 
+      subcommand.setName("unblacklist")
+      .setDescription("Removes a license from blacklist")
+    .addStringOption((option) => 
+    option.setName("license")
+      .setDescription("The license to remove")
+      .setRequired(true))
     ),
 
   async execute(interaction) {
@@ -137,7 +157,7 @@ export default {
         const successEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.success} License Created Successfully!`)
           .setColor("00FF00")
-          .setDescription(`${config.emojis.license} **License Key:** \`${unencrypted}\`\n${config.emojis.product} **Product:** ${productName}`)
+          .setDescription(`${config.emojis.license} **License Key:** \`${unencrypted}\`\n**Product:** ${productName}`)
           .addFields(
             { name: `${config.emojis.login} Max Logins`, value: `${maxLogins}`, inline: true },
             { name: `${config.emojis.ip} Max IPs`, value: `${maxIPs}`, inline: true },
@@ -241,6 +261,91 @@ export default {
           embeds: [new EmbedBuilder().setTitle("Error").setColor("FF0000").setDescription(`An error occurred: ${error}`)],
           ephemeral: true,
         });
+      }
+    } else if (subCommand === "blacklist") {
+      try {
+        const license = interaction.options.getString("license");
+        const reason = interaction.options.getString("reason") || "No reason provided";
+
+        const encrypted = encrypt(license);
+        const licenseToBlacklist = await Licenses.findOne({ key: encrypted });
+
+        if (!licenseToBlacklist) {
+          return interaction.editReply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(`${config.emojis.error} License Not Found`)
+                .setColor("FF0000")
+                .setDescription(`No license found`)
+                .setFooter({ text: "This license may be expired or deleted" })
+            ],
+            ephemeral: true,
+          });
+        }
+
+        licenseToBlacklist.blacklisted = true;
+        await licenseToBlacklist.save();
+
+        interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(`${config.emojis.success} License blacklisted`)
+              .setColor("00ff00")
+              .setDescription(`That license has been blacklisted with reason: ${reason}.`)
+              .setFooter({ text: "You can unblacklist it with /license unblacklist. No message to user sent" })
+          ],
+          ephemeral: true,
+        });
+
+      } catch (error) {
+        console.error("Error blacklisting license:", error);
+        return interaction.editReply({
+          embeds: [new EmbedBuilder().setTitle("Error").setColor("FF0000").setDescription(`An error occurred: ${error}`)],
+          ephemeral: true,
+        });
+      
+      }
+    }else if (subCommand === "unblacklist") {
+      try {
+        const license = interaction.options.getString("license");
+
+        const encrypted = encrypt(license);
+        const licenseToBlacklist = await Licenses.findOne({ key: encrypted });
+
+        if (!licenseToBlacklist || !licenseToBlacklist.blacklisted) {
+          return interaction.editReply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(`${config.emojis.error} License Not Found`)
+                .setColor("FF0000")
+                .setDescription(`No license found`)
+                .setFooter({ text: "This license may not be blacklisted" })
+            ],
+            ephemeral: true,
+          });
+        }
+
+        licenseToBlacklist.blacklisted = true;
+        await licenseToBlacklist.save();
+
+        interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(`${config.emojis.success} License removed from blacklist`)
+              .setColor("00ff00")
+              .setDescription(`That license has been reemoved from blacklist`)
+              .setFooter({ text: "License unblacklisted" })
+          ],
+          ephemeral: true,
+        });
+
+      } catch (error) {
+        console.error("Error removing license from blacklist license:", error);
+        return interaction.editReply({
+          embeds: [new EmbedBuilder().setTitle("Error").setColor("FF0000").setDescription(`An error occurred: ${error}`)],
+          ephemeral: true,
+        });
+      
       }
     }
   },
