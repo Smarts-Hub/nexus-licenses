@@ -7,17 +7,18 @@ const config = {
   webhookUrl: "", // Admin login webhook
 
   webServerConfig: {
-    port: 3110
+    port: 3110  // This is where the web server is being started. Use the one gived by your server provider
   },
 
   MongoDBUri: "mongodb://localhost:27017/licensing", // The MongoDB URI where data is saved. Recommended to use MongoDB Atlas!
 
+  // If using default algorithm (bottom), you can set here the key configuration
   keys: {
-    sections: 7,
+    sections: 7,    
     sectionsLength: 5,
   },
 
-  cron: "0 0 * * *",
+  cron: "0 0 * * *",  // We recommend do not touch this
 
   messages: {
     user: {
@@ -39,7 +40,8 @@ const config = {
     login: "🔓",
     ip: "🌍",
   },
-  interactionApiKey: "",
+  // When deleting the api key, delete the value between "" (interactionApiKey: "delete this")
+  interactionApiKey: "",  // Do no touch
 
 };
 
