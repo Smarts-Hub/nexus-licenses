@@ -5,7 +5,7 @@ import subprocess
 
 # Función para actualizar la versión en el archivo package.json
 def update_package_json_version(version):
-    package_json_path = './src/package.json'
+    package_json_path = './dist/package.json'
 
     with open(package_json_path, 'r+') as f:
         data = json.load(f)

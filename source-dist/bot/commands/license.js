@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, WebhookClient } from "discord.js";
 import config from "../../config.js";
 import Products from "../../schemas/Products.js";
 import Licenses from "../../schemas/Licenses.js";
-import { generateLicense, encrypt, interpolate } from "../../utils.js";
+import { generateLicense, encrypt, interpolate, decrypt } from "../../utils.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -85,7 +85,14 @@ export default {
     option.setName("license")
       .setDescription("The license to remove")
       .setRequired(true))
-    ),
+    )
+    .addSubcommand((subcommand) => 
+      subcommand.setName("find")
+      .setDescription("Find all licenses owned by a user")
+    .addUserOption((option) => 
+    option.setName("customer")
+      .setDescription("The user to find licenses for")
+      .setRequired(true))),
 
   async execute(interaction) {
     const subCommand = interaction.options.getSubcommand();
@@ -94,7 +101,7 @@ export default {
     if (!interaction.member.roles.cache.has(config.adminRoleId)) {
       const noPermissionEmbed = new EmbedBuilder()
         .setTitle(`${config.emojis.error} Access Denied`)
-        .setColor("FF0000")
+        .setColor("Red")
         .setDescription("You don't have the required permissions to manage licenses.")
         .setFooter({ text: "Contact an admin for assistance.", iconURL: config.footerIconUrl });
 
@@ -133,7 +140,7 @@ export default {
             embeds: [
               new EmbedBuilder()
                 .setTitle("License Already Exists")
-                .setColor("FF9900")
+                .setColor("Red")
                 .setDescription(`The user already owns a license for \`${productName}\`.`)
                 .setFooter({ text: "Use /licenses delete to remove the license." }),
             ],
@@ -156,7 +163,7 @@ export default {
 
         const successEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.success} License Created Successfully!`)
-          .setColor("00FF00")
+          .setColor("ffb4b4")
           .setDescription(`${config.emojis.license} **License Key:** \`${unencrypted}\`\n**Product:** ${productName}`)
           .addFields(
             { name: `${config.emojis.login} Max Logins`, value: `${maxLogins}`, inline: true },
@@ -168,7 +175,7 @@ export default {
 
         const userEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.license} Your License is Ready!`)
-          .setColor("00FF00")
+          .setColor("ffb4b4")
           .setDescription(
             interpolate(config.messages.user.licenseCreated, {
               key: unencrypted,
@@ -179,7 +186,16 @@ export default {
           )
           .setFooter({ text: "Thank you for your purchase!" });
 
-        await customer.send({ embeds: [userEmbed] });
+        try {
+          await customer.send({ embeds: [userEmbed] });
+        } catch (err) {
+          console.error("Error sending user license:", err);
+          const errEmbed = new EmbedBuilder()
+            .setColor('Red')
+            .setTitle('Can not send DM message to user')
+            .setDescription(`\`\`\`${err.message}\`\`\``)
+          await interaction.editReply({ embeds: [errEmbed], ephemeral: true })
+        }
         webhookClient.send({ embeds: [successEmbed] });
 
         return interaction.editReply({ embeds: [successEmbed], ephemeral: true });
@@ -203,7 +219,7 @@ export default {
             embeds: [
               new EmbedBuilder()
                 .setTitle(`${config.emojis.error} Product Not Found`)
-                .setColor("FF0000")
+                .setColor("Red")
                 .setDescription(`The product **${productName}** does not exist.`)
                 .setFooter({ text: "Please double-check the product name.", iconURL: config.footerIconUrl })
             ],
@@ -217,7 +233,7 @@ export default {
             embeds: [
               new EmbedBuilder()
                 .setTitle(`${config.emojis.error} License Not Found`)
-                .setColor("FF0000")
+                .setColor("Red")
                 .setDescription(`No license found for **${owner.username}** on **${productName}**.`)
                 .setFooter({ text: "Ensure the user has an active license for the specified product." })
             ],
@@ -229,7 +245,7 @@ export default {
 
         const successEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.success} License Deleted Successfully`)
-          .setColor("00FF00")
+          .setColor("ffb4b4")
           .setDescription(
             `${config.emojis.license} License for **${productName}** belonging to **${owner.username}** has been deleted.\n\n**Reason:** ${reason}`
           )
@@ -237,7 +253,7 @@ export default {
 
         const webhookEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.error} License Deleted`)
-          .setColor("FF0000")
+          .setColor("ffb4b4")
           .setDescription(
             `${config.emojis.license} License for **${productName}** owned by **${owner.username}** was deleted by **<@${interaction.user.id}>**.\n\n**Reason:** ${reason}`
           )
@@ -245,7 +261,7 @@ export default {
 
         const userEmbed = new EmbedBuilder()
           .setTitle(`${config.emojis.error} License Deleted`)
-          .setColor("FF0000")
+          .setColor("Red")
           .setDescription(interpolate(config.messages.user.licenseDeleted, {
             product: productName,
             reason: reason,
@@ -258,7 +274,7 @@ export default {
       } catch (error) {
         console.error("Error deleting license:", error);
         return interaction.editReply({
-          embeds: [new EmbedBuilder().setTitle("Error").setColor("FF0000").setDescription(`An error occurred: ${error}`)],
+          embeds: [new EmbedBuilder().setTitle("Error").setColor("Red").setDescription(`An error occurred: ${error}`)],
           ephemeral: true,
         });
       }
@@ -275,7 +291,7 @@ export default {
             embeds: [
               new EmbedBuilder()
                 .setTitle(`${config.emojis.error} License Not Found`)
-                .setColor("FF0000")
+                .setColor("Red")
                 .setDescription(`No license found`)
                 .setFooter({ text: "This license may be expired or deleted" })
             ],
@@ -290,7 +306,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setTitle(`${config.emojis.success} License blacklisted`)
-              .setColor("00ff00")
+              .setColor("ffb4b4")
               .setDescription(`That license has been blacklisted with reason: ${reason}.`)
               .setFooter({ text: "You can unblacklist it with /license unblacklist. No message to user sent" })
           ],
@@ -300,7 +316,7 @@ export default {
       } catch (error) {
         console.error("Error blacklisting license:", error);
         return interaction.editReply({
-          embeds: [new EmbedBuilder().setTitle("Error").setColor("FF0000").setDescription(`An error occurred: ${error}`)],
+          embeds: [new EmbedBuilder().setTitle("Error").setColor("Red").setDescription(`An error occurred: ${error}`)],
           ephemeral: true,
         });
       
@@ -317,7 +333,7 @@ export default {
             embeds: [
               new EmbedBuilder()
                 .setTitle(`${config.emojis.error} License Not Found`)
-                .setColor("FF0000")
+                .setColor("Red")
                 .setDescription(`No license found`)
                 .setFooter({ text: "This license may not be blacklisted" })
             ],
@@ -332,7 +348,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setTitle(`${config.emojis.success} License removed from blacklist`)
-              .setColor("00ff00")
+              .setColor("ffb4b4")
               .setDescription(`That license has been reemoved from blacklist`)
               .setFooter({ text: "License unblacklisted" })
           ],
@@ -346,6 +362,52 @@ export default {
           ephemeral: true,
         });
       
+      }
+    } else if (subCommand === "find") {
+      const user = interaction.options.getUser("customer");
+      try {
+        const userLicenses = await Licenses.find({
+          ownerId: user.id,
+        });
+
+        if (userLicenses.length === 0) {
+          const noLicensesEmbed = new EmbedBuilder()
+            .setTitle("No licenses")
+            .setColor("Red")
+            .setDescription('This user has no licenses')
+          return interaction.editReply({
+            embeds: [noLicensesEmbed],
+          });
+        }
+
+        let licensesDescriptions = '';
+        for (const license of userLicenses) {
+          const product = await Products.findById(license.productId);
+          const productName = product ? product.name : "Unknown product";
+          const decryptedKey = await decrypt(license.key);
+          const remainingLogins = license.maxLogins - license.currentLogins;
+        
+          licensesDescriptions += `> **\`${decryptedKey}\`**\n> Created at: **${new Date(
+            license.createdAt
+          ).toLocaleString()}**\n> Product: ${productName}\n> Remaining logins: ${remainingLogins == -1 ? 'Unlimited' : remainingLogins}\n\n`;
+        }
+
+        const licensesEmbed = new EmbedBuilder()
+          .setTitle(`${user.username} licenses`)
+          .setColor("ffb4b4")
+          .setDescription(licensesDescriptions)
+          .setTimestamp();
+
+        return interaction.editReply({ embeds: [licensesEmbed] });
+      } catch (error) {
+        console.error("Error fetching user licenses:", error);
+        const errorMessage = new EmbedBuilder()
+          .setTitle("Error")
+          .setColor("Red")
+          .setDescription(
+            `Error searching for user licenses: ${error}`
+          );
+        return interaction.editReply({ embeds: [errorMessage] });
       }
     }
   },

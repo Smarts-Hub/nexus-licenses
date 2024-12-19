@@ -189,6 +189,16 @@ import LicenseManager from "./licensemanager.js";
 
 const licenseManager = new LicenseManager();
 router.post('/licenses/create', async (req, res) => {
+  const token = req.headers.authorization;
+  
+  if (!token) {
+    return res.json({ status: "error", message: "Invalid token", data: { error: 'Undefined token'} });
+  }
+
+  if (token !== await decrypt(config.interactionApiKey)) {
+    return res.json({ status: "error", message: "Invalid token", data: { error: 'Invalid token'} });
+  }
+  
   const { productName, maxLogins, maxIps, expires, ownerName } = req.body;
 
   try {

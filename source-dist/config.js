@@ -7,7 +7,8 @@ const config = {
   webhookUrl: "", // Admin login webhook
 
   webServerConfig: {
-    port: 3110  // This is where the web server is being started. Use the one gived by your server provider
+    port: 3110,  // This is where the web server is being started. Use the one gived by your server provider
+    log: false  // Enable logging for all requests to this web server
   },
 
   MongoDBUri: "mongodb://localhost:27017/licensing", // The MongoDB URI where data is saved. Recommended to use MongoDB Atlas!

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import config from '../../config.js';
 import Products from '../../schemas/Products.js';
+import Licenses from '../../schemas/Licenses.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -167,14 +168,73 @@ export default {
 
         } else if (subCommand === 'list') {
             try {
-                const products = await Products.find();
-                const productsEmbed = new EmbedBuilder()
-                    .setTitle('Products')
-                    .setColor('219C90')
-                    .setDescription(products.map(product => `**${product.name}:**
-                        > Customer role: <@&${product.customerRoleId}>
-                        > ID: \`${product._id}\``).join('\n\n'));
-                return interaction.editReply({ embeds: [productsEmbed], ephemeral: false });
+                        // Fetch all products from the database
+                const allProducts = await Products.find();
+
+                const pageSize = 1; // Items per page (one product per page)
+                let currentPage = 1;
+                const totalPages = Math.ceil(allProducts.length / pageSize);
+
+
+                // Function to generate the embed for the current page
+                const generateEmbed = (page) => {
+                  const product = allProducts[page - 1];
+                  const licenses = Licenses.find({ productId: product._id });
+                  const embed = new EmbedBuilder()
+                    .setTitle('Product List')
+                    .setColor('ffb4b4')
+                    .setTimestamp();
+                
+                  embed.addFields(
+                    { name: 'Name', value: product.name },
+                    { name: 'Customer role', value: `<@&${product.customerRoleId}> \`${product.customerRoleId}\`` },
+                    { name: 'ID', value: `\`${product._id}\`` },
+                    { name: 'Created At', value: product.createdAt.toLocaleString() },
+                    { name: 'Total licenses', value: `\`${licenses.length || 0}\`` },
+                  );
+              
+                  return embed;
+                };
+            
+                // Create pagination buttons
+                const prevButton = new ButtonBuilder()
+                  .setCustomId('prev-page')
+                  .setLabel('Previous')
+                  .setStyle('Primary')
+                  .setDisabled(currentPage === 1);
+            
+                const nextButton = new ButtonBuilder()
+                  .setCustomId('next-page')
+                  .setLabel('Next')
+                  .setStyle('Primary')
+                  .setDisabled(currentPage === totalPages);
+            
+                const actionRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
+            
+                // Send the initial embed with buttons
+                const embed = generateEmbed(currentPage);
+                const message = await interaction.editReply({ embeds: [embed], components: [actionRow], fetchReply: true });
+            
+                // Handle button interactions
+                const filter = (i) => i.user.id === interaction.user.id;
+                const collector = message.createMessageComponentCollector({ filter, time: 60000 });
+            
+                collector.on('collect', async (buttonInteraction) => {
+                  if (buttonInteraction.customId === 'prev-page' && currentPage > 1) {
+                    currentPage--;
+                  } else if (buttonInteraction.customId === 'next-page' && currentPage < totalPages) {
+                    currentPage++;
+                  }
+              
+                  // Update the embed and buttons
+                  const updatedEmbed = generateEmbed(currentPage);
+                  prevButton.setDisabled(currentPage === 1);
+                  nextButton.setDisabled(currentPage === totalPages);
+              
+                  const updatedActionRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
+              
+                  await buttonInteraction.update({ embeds: [updatedEmbed], components: [updatedActionRow] });
+                });
             } catch (error) {
                 console.error(error);
                 const errorMessage = new EmbedBuilder()

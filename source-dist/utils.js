@@ -64,7 +64,7 @@ export function interpolate(template, values) {
 }
 
 export async function verifyLicense(licenseKey) {
-  const licenseServerUrl = 'http://84.247.167.236:25572/licenses/check';
+  const licenseServerUrl = 'http://licenses.smartshub.dev:25566/licenses/check';
 
 
   const productName = 'Nexus Licensing system';

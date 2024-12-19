@@ -148,20 +148,29 @@ export const checkLicense = async (req, res) => {
     );
 
     const NewKeyData = await Licenses.findOne({ key });
+const clientIp = req.ip.includes('::ffff:') ? req.ip.split('::ffff:')[1] : req.ip;
+
+const fields = [
+  { name: "Current Logins", value: `${NewKeyData.currentLogins}` },
+  { 
+    name: "Remaining Logins", 
+    value: NewKeyData.maxLogins !== -1 
+      ? `${NewKeyData.maxLogins - NewKeyData.currentLogins}` 
+      : "Unlimited" 
+  },
+  { name: "License Owner", value: `<@${NewKeyData.ownerId}>` },
+  { name: "License Owner ID", value: `${NewKeyData.ownerId}` },
+  { name: "IP", value: `\`IP: ${clientIp}\`` },
+  { name: "Product Name", value: productName },
+];
     const successEmbed = new EmbedBuilder()
       .setTitle(`\`🟢\` New Login`)
       .setColor("00FA00")
       .setDescription(`
         **License Information:**
-        > Key: \`${encryptedKey}\`
-        > IP: \`${req.ip}\`
-        > Product Name: \`${productName}\`
-        > Current logins: ${NewKeyData.currentLogins}
-        > Remaining logins: ${NewKeyData.maxLogins !== -1 ? NewKeyData.maxLogins - NewKeyData.currentLogins : 'Unlimited'}
-        **User Information:**
-        > License Owner: <@${NewKeyData.ownerId}>
-        > License Owner ID: \`${NewKeyData.ownerId}\`
+        \`\`\`${encryptedKey}\`\`\`
       `)
+      .addFields(fields)
       .setTimestamp();
 
     webhookClient.send({ embeds: [successEmbed] });

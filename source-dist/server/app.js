@@ -32,7 +32,9 @@ app.use(sessions({
     saveUninitialized: true,
 }))
 
-app.use(morgan('dev'));
+if(config.webServerConfig.log) {
+    app.use(morgan('dev'));
+}
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
