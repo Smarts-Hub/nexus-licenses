@@ -1,14 +1,15 @@
 const config = {
   licenseKey: "WSJOX-32YCG-NRQG4-IIC18-G97OH", // Your license key
-  token: "MTMxMTAwMjk0MzQ0MDU1MTk3Nw.GpaZRU.-rqz7sACTo-_p1OHfoTb796gxRB1k98ZctCw_E", // Your bot's token
+  token: "MTMxMTAwMjk0MzQ0MDU1MTk3Nw.GWshS3.lOwiv13rwJgZAaT_P1a9syHhsmJSYNcIs7OVEk", // Your bot's token
   botId: "1311002943440551977", // Your bot's id
   guildId: "1067924392551665766", // Your guild's id
   adminRoleId: "1154752038534651934", // The role id for administrators on your guild
-  webhookUrl: "https://discord.com/api/webhooks/1314298388426133506/SpRVwTANKh3yxS6caNnRV4aCZQOI6Lcm-jMdM_IstYG2nMsVA2xKHRanH6eYU8S-wkg8",
+  webhookUrl: "https://discord.com/api/webhooks/1256214916281663489/MzA3qlP1koda-LjvGjsZJaiEF9iw1dgYskGtvfE-aI8gqHgciJG7TokzImV0B1-641pj",
 
   webServerConfig: {
     port: 3110,
     log: false,
+    locationLog: true // Get the real location of a request
   },
 
   MongoDBUri: "mongodb://localhost:27017/licensing", // The MongoDB URI where data is saved. Recommended to use MongoDB Atlas!

@@ -8,11 +8,12 @@ const config = {
 
   webServerConfig: {
     port: 3110,  // This is where the web server is being started. Use the one gived by your server provider
-    log: false  // Enable logging for all requests to this web server
+    log: false,  // Enable logging for all requests to this web server
+    locationLog: false // Get the real location of a request
   },
 
   MongoDBUri: "mongodb://localhost:27017/licensing", // The MongoDB URI where data is saved. Recommended to use MongoDB Atlas!
-
+  
   // If using default algorithm (bottom), you can set here the key configuration
   keys: {
     sections: 7,    

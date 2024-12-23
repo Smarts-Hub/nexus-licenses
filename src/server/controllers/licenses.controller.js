@@ -3,6 +3,7 @@ import Licenses from "../../schemas/Licenses.js";
 import Products from "../../schemas/Products.js";
 import config from "../../config.js";
 import { encrypt } from "../../utils.js";
+import axios from "axios"
 
 // Función para verificar la licencia
 export const checkLicense = async (req, res) => {
@@ -148,21 +149,38 @@ export const checkLicense = async (req, res) => {
     );
 
     const NewKeyData = await Licenses.findOne({ key });
-const clientIp = req.ip.includes('::ffff:') ? req.ip.split('::ffff:')[1] : req.ip;
+    const clientIp = req.ip.includes('::ffff:') ? req.ip.split('::ffff:')[1] : req.ip;
 
-const fields = [
-  { name: "Current Logins", value: `${NewKeyData.currentLogins}` },
-  { 
-    name: "Remaining Logins", 
-    value: NewKeyData.maxLogins !== -1 
-      ? `${NewKeyData.maxLogins - NewKeyData.currentLogins}` 
-      : "Unlimited" 
-  },
-  { name: "License Owner", value: `<@${NewKeyData.ownerId}>` },
-  { name: "License Owner ID", value: `${NewKeyData.ownerId}` },
-  { name: "IP", value: `\`IP: ${clientIp}\`` },
-  { name: "Product Name", value: productName },
-];
+    const fields = [
+      { name: "Current Logins", value: `${NewKeyData.currentLogins}` },
+      {
+        name: "Remaining Logins",
+        value: NewKeyData.maxLogins !== -1
+          ? `${NewKeyData.maxLogins - NewKeyData.currentLogins}`
+          : "Unlimited"
+      },
+      { name: "License Owner", value: `<@${NewKeyData.ownerId}>` },
+      { name: "License Owner ID", value: `${NewKeyData.ownerId}` },
+      { name: "IP", value: `\`IP: ${clientIp}\`` },
+      { name: "Product Name", value: productName },
+    ];
+
+    if (config.webServerConfig.locationLog) {
+      await axios.get(`http://ip-api.com/json/${clientIp}`)
+        .then(response => {
+          if (response.data.status === 'fail') {
+            fields.push({ name: "Location", value: '`Location: Unknown`' });
+          } else {
+            const realIpLocation = `${response.data.city}, ${response.data.regionName}, ${response.data.country}`;
+            fields.push({ name: "Location", value: `\`Location: ${realIpLocation}\`` });
+          }
+        })
+        .catch(error => {
+          console.error('Error retrieving location:', error);
+          fields.push({ name: "Location", value: '`Location: Unknown`' });
+        });
+    }
+
     const successEmbed = new EmbedBuilder()
       .setTitle(`\`🟢\` New Login`)
       .setColor("00FA00")
@@ -228,7 +246,7 @@ export const validateLicense = async (req, res) => {
       const errorEmbed = new EmbedBuilder()
         .setTitle(`\`🔴\` License/Product Error`)
         .setColor("FF0000")
-        .setDescription(`Invalid license or product. Key: \`${encryptedKey}\`, Product: \`${productName}\``)
+        .setDescription(`Invalid license or product. Key: \`${key}\`, Product: \`${productName}\``)
         .setTimestamp();
 
       webhookClient.send({ embeds: [errorEmbed] });
